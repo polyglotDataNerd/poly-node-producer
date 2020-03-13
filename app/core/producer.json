@@ -9,7 +9,7 @@
     "region": "us-west-2",
     "endpoint": "s3-us-west-2.amazonaws.com",
     "apiVersion": "2006-03-01",
-    "bucket": "sweetgreen-bigdata-qsr",
+    "bucket": "polyglotDataNerd-bigdata-qsr",
     "key": "raw"
   },
   "sts": {

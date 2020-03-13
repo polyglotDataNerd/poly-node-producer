@@ -3,7 +3,7 @@ swagger: "2.0"
 info:
   version: "2019-04-26T13:24:24Z"
   title: "api-producer-qsr-testing"
-host: "data.sweetgreen.com"
+host: "data.polyglotDataNerd.com"
 basePath: "/qsr"
 schemes:
 - "https"

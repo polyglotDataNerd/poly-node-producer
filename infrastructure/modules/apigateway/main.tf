@@ -124,7 +124,7 @@ resource "aws_lambda_permission" "apigw_lambda_producer_perms" {
 
 /*Producer Lambda: will be coming from the same package in s3 but just different handlers*/
 resource "aws_lambda_function" "producer" {
-  s3_bucket = "sweetgreen-bigdata-utility"
+  s3_bucket = "polyglotDataNerd-bigdata-utility"
   s3_key = "lambda/qsr/sg-QSR-producer-Auth.zip"
   function_name = "api-producer-qsr-${var.environment}"
   role = "${var.lambda_role}"
@@ -224,7 +224,7 @@ resource "aws_api_gateway_authorizer" "basic_auth" {
 
 /*Authorizer Lambda: will be coming from sg-QSR-producer-Auth.zip package in s3 but just different handlers*/
 resource "aws_lambda_function" "authorizer" {
-  s3_bucket = "sweetgreen-bigdata-utility"
+  s3_bucket = "polyglotDataNerd-bigdata-utility"
   s3_key = "lambda/qsr/sg-QSR-producer-Auth.zip"
   function_name = "api-authorizer-qsr-${var.environment}"
   role = "${var.lambda_role}"
@@ -299,6 +299,6 @@ resource "aws_iam_role_policy_attachment" "logs_attach" {
 resource "aws_api_gateway_base_path_mapping" "qsr_domain_map" {
   api_id = "${aws_api_gateway_rest_api.qsr_api.id}"
   stage_name = "${aws_api_gateway_stage.api_stage.stage_name}"
-  domain_name = "data.sweetgreen.com"
+  domain_name = "data.polyglotDataNerd.com"
   base_path = "qsr"
 }*/

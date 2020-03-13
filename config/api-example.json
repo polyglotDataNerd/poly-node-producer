@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "https://data.sweetgreen.com/{basePath}",
+      "url": "https://data.polyglotDataNerd.com/{basePath}",
       "variables": {
         "basePath": {
           "default": "/events"
