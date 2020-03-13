@@ -1,0 +1,14 @@
+*.DS_Store
+*.properties
+*.jar
+*.iml
+.idea/
+**/node_modules/*
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+*target/*
+*config.json*

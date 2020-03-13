@@ -1,0 +1,80 @@
+---
+swagger: "2.0"
+info:
+  version: "2019-04-26T13:24:24Z"
+  title: "api-producer-qsr-testing"
+host: "data.sweetgreen.com"
+basePath: "/qsr"
+schemes:
+- "https"
+paths:
+  /:
+    post:
+      parameters:
+      - name: "proxy"
+        in: "path"
+        required: true
+        type: "string"
+      responses: {}
+      security:
+      - qsr-basicauth-testing: []
+      x-amazon-apigateway-integration:
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:447388672287:function:api-producer-qsr-testing/invocations"
+        passthroughBehavior: "when_no_match"
+        timeoutInMillis: 29000
+        httpMethod: "POST"
+        type: "aws_proxy"
+    options:
+      produces:
+      - "application/json"
+      parameters:
+      - name: "proxy"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/Empty"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Headers:
+              type: "string"
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST,PUT'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        passthroughBehavior: "when_no_match"
+        timeoutInMillis: 29000
+        type: "mock"
+securityDefinitions:
+  qsr-basicauth-testing:
+    type: "apiKey"
+    name: "authorization"
+    in: "header"
+    x-amazon-apigateway-authtype: "custom"
+    x-amazon-apigateway-authorizer:
+      authorizerUri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:447388672287:function:api-authorizer-qsr-testing/invocations"
+      authorizerCredentials: "arn:aws:iam::447388672287:role/sg-lambda-invoke-platforms"
+      authorizerResultTtlInSeconds: 300
+      identitySource: "method.request.header.authorization"
+      type: "request"
+definitions:
+  Empty:
+    type: "object"
+    title: "Empty Schema"
+x-amazon-apigateway-gateway-responses:
+  UNAUTHORIZED:
+    statusCode: 401
+    responseParameters:
+      gatewayresponse.header.WWW-Authenticate: "'Basic'"
+    responseTemplates:
+      application/json: "{'message':$context.error.messageString}"
