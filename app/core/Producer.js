@@ -5,7 +5,6 @@ const config = require('./producer.json'),
     moment = require('moment'),
     sts_client = new aws.STS({apiVersion: config.sts.apiVersion}),
     path = require('path'),
-    uuidv4 = require("uuid/v4"),
     moduleName = path.basename(__filename)
 aws.config.update({setPromisesDependency: promise})
 const responsetemplate = {
@@ -20,7 +19,7 @@ const responsetemplate = {
     },
     error: (error) => {
         return {
-            "statusCode": 400,
+            "statusCode": error.code,
             "isBase64Encoded": false,
             "headers": {"Accept": "application/json", "Content-Type": "application/json"},
             "body": JSON.stringify(error)
@@ -34,6 +33,12 @@ const responsetemplate = {
 /*creates a class module to be able to import into other modules*/
 function Producer() {
     this.putKinesis = function (event, log, credentials, logging) {
+        var kinesis = new aws.Kinesis({
+            apiVersion: config.kinesis.apiVersion,
+            region: config.kinesis.region,
+            endpoint: config.kinesis.endpoint,
+            credentials: credentials
+        })
         logging.info([
             process.env.GitHash
             + ":" +
@@ -42,12 +47,6 @@ function Producer() {
             process.env.Stream
         ], event["body"])
         return new promise((resolve, reject) => {
-            var kinesis = new aws.Kinesis({
-                apiVersion: config.kinesis.apiVersion,
-                region: config.kinesis.region,
-                endpoint: config.kinesis.endpoint,
-                credentials: credentials
-            })
             //Put record to Kinesis
             var partitionKey = Math.random().toString(33).substring(2, 20)
             logging.info("Partition Key: ", partitionKey)
@@ -89,16 +88,15 @@ function Producer() {
             + ":" +
             this.putS3.name
         ], event["body"])
+        var s3 = new aws.S3({
+            apiVersion: config.s3.apiVersion,
+            region: config.s3.region,
+            endpoint: config.s3.endpoint,
+            credentials: credentials
+        })
         return new promise((resolve, reject) => {
-            var s3 = new aws.S3({
-                apiVersion: config.s3.apiVersion,
-                region: config.s3.region,
-                endpoint: config.s3.endpoint,
-                credentials: credentials
-            })
             var S3LogDate = moment.utc(new Date()).format('YYYY-MM-DD/YYYY-MM-DD-HHmmss');
             //Put record to s3
-            var s3key = JSON.parse(event["body"].toString().toLowerCase())
             var paramsS3 = {
                 Bucket: config.s3.bucket,
                 //Key: config.s3.key + "/raw/" + s3key["channel"] + "/" + S3LogDate + "-events-" + Math.random().toString(36).substring(7),
@@ -115,7 +113,7 @@ function Producer() {
                         + ":" +
                         this.putS3.name
                         + ":" +
-                        err.statusCode.toString()
+                        err.lineNumber.toString()
                     ], responsetemplate.error(err.message + ": " + err.stack))
                     return reject("Error: " + responsetemplate.error(err.message + ": " + err.stack) + ": " + responsetemplate.error(err))
                 } else {
@@ -125,7 +123,7 @@ function Producer() {
                         moduleName
                         + ":" +
                         this.putS3.name
-                    ], data.ShardId + ": " + data.SequenceNumber)
+                    ], data)
                     return resolve(responsetemplate.success(event) + "-" + log)
                 }
             })

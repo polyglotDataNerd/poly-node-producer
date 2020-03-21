@@ -53,7 +53,7 @@ exports.handler = function (event, context, callback) {
         exports.handler.name
         + ":" +
         console.trace()
-    ], 'Method ARN: ' + event.methodArn)
+    ], 'Method ARN: ' + event)
     let authenticate = new auth(event, config, callback, logging)
     try {
         callback(null, authenticate.authorize())

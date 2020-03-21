@@ -23,7 +23,7 @@ const responsetemplate = {
     },
     error: (error) => {
         return {
-            "statusCode": 400,
+            "statusCode": error.code,
             "isBase64Encoded": false,
             "headers": {"Accept": "application/json", "Content-Type": "application/json"},
             "body": JSON.stringify(error)
@@ -42,10 +42,7 @@ exports.handler = function (event, context, callback) {
             .then(cred => {
                     prod.putKinesis(event, context, cred, logging)
                         .then(
-                            prod.putS3(event, context, cred, logging)
-                                .then(
-                                    callback(null, responsetemplate.success(context))
-                                )
+                            callback(null, responsetemplate.success(context))
                         )
                 }
             )
