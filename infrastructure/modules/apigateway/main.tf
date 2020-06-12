@@ -21,7 +21,7 @@ resource "aws_api_gateway_method" "post" {
   authorization = "CUSTOM"
   authorizer_id = "${aws_api_gateway_authorizer.basic_auth.id}"
 
-  /*if resource path was set to a greedy varible {proxy+}*/
+  /*if resource path was set to a greedy variable {proxy+}*/
   request_parameters = {
     "method.request.path.proxy" = true
   }
@@ -92,11 +92,11 @@ resource "aws_api_gateway_gateway_response" "gateway_response" {
   status_code = "401"
   response_type = "UNAUTHORIZED"
 
-  response_templates {
+  response_templates = {
     "application/json" = "{'message':$context.error.messageString}"
   }
 
-  response_parameters {
+  response_parameters = {
     "gatewayresponse.header.WWW-Authenticate" = "'Basic'"
   }
 }

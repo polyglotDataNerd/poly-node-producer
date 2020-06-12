@@ -80,6 +80,24 @@ function Producer() {
             })
         })
     }
+    this.putKafka = function(event, log, credentials, logging) {
+        logging.info([
+            process.env.GitHash
+            + ":" +
+            moduleName
+            + ":" +
+            this.putS3.name
+        ], event["body"])
+        var kafka = new aws.Kafka( {
+            apiVersion: config.kinesis.apiVersion,
+            region: config.kinesis.region,
+            endpoint: config.kinesis.endpoint,
+            credentials: credentials
+        })
+        return new promise((resolve, reject) => {
+            kafka.makeRequest()
+        })
+    }
     this.putS3 = function (event, log, credentials, logging) {
         logging.info([
             process.env.GitHash
