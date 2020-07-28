@@ -1,8 +1,4 @@
 'use strict'
-/*
-1. https://stackoverflow.com/questions/41750026/aws-lambda-error-cannot-find-module-var-task-index
-2. https://echorand.me/managing-aws-lambda-functions-from-start-to-finish-with-terraform.html
- */
 const config = require('./index').prodconfig,
     aws = require('aws-sdk'),
     logging = require('./index').Logger,
@@ -10,56 +6,70 @@ const config = require('./index').prodconfig,
     producer = require("./index").Producer,
     path = require('path'),
     moduleName = path.basename(__filename)
-aws.config.update({setPromisesDependency: promise})
+aws.config.update({
+    setPromisesDependency: promise,
+    maxRetries: 5,
+    httpOptions: {
+        timeout: 30000,
+        connectTimeout: 5000
+    }
+})
+let prod = new producer();
 const responsetemplate = {
     success: (responseBody) => {
         return {
-            "statusCode": 200,
+            "statusCode": 202,
             "isBase64Encoded": false,
-            "headers": {"Accept": "application/json", "Content-Type": "application/json"},
+            "headers": {
+                "Accept": "*/*",
+                "Content-Type": "application/json",
+                'Access-Control-Allow-Origin': '*'
+            },
+            "multiValueHeaders": {},
             "body": JSON.stringify(responseBody)
 
         }
     },
     error: (error) => {
         return {
-            "statusCode": error.code,
+            "statusCode": 402,
             "isBase64Encoded": false,
-            "headers": {"Accept": "application/json", "Content-Type": "application/json"},
+            "headers": {
+                "Accept": "*/*",
+                "Content-Type": "application/json",
+                'Access-Control-Allow-Origin': '*'
+            },
+            "multiValueHeaders": {},
             "body": JSON.stringify(error)
 
         }
 
     }
-
 }
 
-
 exports.handler = function (event, context, callback) {
-    let prod = new producer();
-    promise.resolve()
-        .then(prod.getSTS(config.sts.sgbdRole)
-            .then(cred => {
-                    prod.putKinesis(event, context, cred, logging)
-                        .then(
-                            callback(null, responsetemplate.success(context))
-                        )
-                }
-            )
+    prod.getSTS(config.sts.sgbdRole)
+        .then(cred => {
+                prod.putS3(event, context, cred, logging)
+                    // .then(prod.putKafka(event, context, cred, logging)
+                    //     .then((callback(null, responsetemplate.success(event.body))))
+                    // )
+                    .then(
+                        callback(null, responsetemplate.success(context))
+                    )
+            }
         )
         .catch((err) => {
                 logging.error(
                     [
-                        process.env.GitHash
-                        + ":" +
                         moduleName
                         + ":" +
-                        exports.handler.name
-                        + ":" +
-                        err.statusCode.toString()
+                        context.functionName
                     ]
-                    , responsetemplate.error(err.message + ": " + err.stack))
-                callback(responsetemplate.error(err.message + ": " + err.stack + ": " + event["body"].toString()), null)
+                    , responsetemplate.error(err))
+                logging.error(err)
+                callback(new Error((JSON.stringify({"handlerFail": moduleName}))))
             }
         )
+
 }

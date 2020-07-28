@@ -5,29 +5,47 @@ const config = require('./producer.json'),
     moment = require('moment'),
     sts_client = new aws.STS({apiVersion: config.sts.apiVersion}),
     path = require('path'),
-    moduleName = path.basename(__filename)
-aws.config.update({setPromisesDependency: promise})
+    fs = require('fs'),
+    kafkaAPI = require('kafka-node'),
+    moduleName = path.basename(__filename),
+    kafkaClient = new kafkaAPI.KafkaClient({
+        kafkaHost: process.env.BootStrapServers,
+        sslOptions: {
+            rejectUnauthorized: false,
+            // ca: [fs.readFileSync('/my/custom/ca.crt', 'utf-8')],
+            // key: fs.readFileSync('/my/custom/client-key.pem', 'utf-8'),
+            // cert: fs.readFileSync('/my/custom/client-cert.pem', 'utf-8')
+        }
+    }),
+    kafkaProducer = new kafkaAPI.Producer(kafkaClient, {
+        requireAcks: 1,
+        ackTimeoutMs: 100
+    })
+aws.config.update({
+    setPromisesDependency: promise
+})
 const responsetemplate = {
     success: (responseBody) => {
         return {
-            "statusCode": 200,
+            "statusCode": 208,
             "isBase64Encoded": false,
-            "headers": {"Accept": "application/json", "Content-Type": "application/json"},
+            "headers": {"Accept": "*/*", "Content-Type": "application/json"},
+            "multiValueHeaders": {},
             "body": JSON.stringify(responseBody)
 
         }
     },
     error: (error) => {
         return {
-            "statusCode": error.code,
+            "statusCode": 408,
             "isBase64Encoded": false,
-            "headers": {"Accept": "application/json", "Content-Type": "application/json"},
+            "headers": {"Accept": "*/*", "Content-Type": "application/json"},
+            "multiValueHeaders": {},
             "body": JSON.stringify(error)
 
         }
 
     }
-
 }
 
 /*creates a class module to be able to import into other modules*/
@@ -40,8 +58,6 @@ function Producer() {
             credentials: credentials
         })
         logging.info([
-            process.env.GitHash
-            + ":" +
             moduleName
             + ":" +
             process.env.Stream
@@ -58,19 +74,15 @@ function Producer() {
             kinesis.putRecord(paramsKinesis, (err, data) => {
                 if (err) {
                     logging.error([
-                        process.env.GitHash
-                        + ":" +
                         moduleName
                         + ":" +
                         process.env.Stream
                         + ":" +
                         err.statusCode.toString()
-                    ], responsetemplate.error(err.message + ": " + err.stack))
-                    return reject("Error: " + responsetemplate.error(err.message + ": " + err.stack))
+                    ], responsetemplate.error(err))
+                    return reject("Error: " + responsetemplate.error(err))
                 } else {
                     logging.info([
-                        process.env.GitHash
-                        + ":" +
                         moduleName
                         + ":" +
                         process.env.Stream
@@ -80,32 +92,39 @@ function Producer() {
             })
         })
     }
-    this.putKafka = function(event, log, credentials, logging) {
-        logging.info([
-            process.env.GitHash
-            + ":" +
-            moduleName
-            + ":" +
-            this.putS3.name
-        ], event["body"])
-        var kafka = new aws.Kafka( {
-            apiVersion: config.kinesis.apiVersion,
-            region: config.kinesis.region,
-            endpoint: config.kinesis.endpoint,
-            credentials: credentials
-        })
+    /* this is still in POC for AWS MSK, Kafka needs SSL cert to put into Brokers */
+    this.putKafka = function (event, log, credentials, logging) {
         return new promise((resolve, reject) => {
-            kafka.makeRequest()
+            if (event.body !== null && event.body != undefined) {
+                let body = JSON.parse(event.body)
+                let payloads = [
+                    {
+                        topic: config.msk.topic,
+                        messages: body
+                        //timestamp: Date.now()
+                    }
+                ]
+                logging.info("kafka producer put", event.body)
+                kafkaProducer.on("ready", async () => {
+                    kafkaProducer.send(payloads, (err, data) => {
+                        if (err) {
+                            logging.error("kafka producer error", err)
+                            return reject(responsetemplate.error(new Error('{"message": err.message}')))
+                        } else {
+                            logging.info("kafka payload", data.Key)
+                            return resolve(responsetemplate.success(event.body))
+                        }
+                    })
+                })
+                kafkaProducer.on("error", (err) => {
+                    logging.error("kafka producer error", err)
+                    logging.error('[kafka-producer -> ' + config.msk.topic + ']: connection errored')
+                    return reject(responsetemplate.error(new Error('{"message": err.message}')))
+                })
+            }
         })
     }
-    this.putS3 = function (event, log, credentials, logging) {
-        logging.info([
-            process.env.GitHash
-            + ":" +
-            moduleName
-            + ":" +
-            this.putS3.name
-        ], event["body"])
+    this.putS3 = function (event, context, credentials, logging) {
         var s3 = new aws.S3({
             apiVersion: config.s3.apiVersion,
             region: config.s3.region,
@@ -113,38 +132,29 @@ function Producer() {
             credentials: credentials
         })
         return new promise((resolve, reject) => {
-            var S3LogDate = moment.utc(new Date()).format('YYYY-MM-DD/YYYY-MM-DD-HHmmss');
-            //Put record to s3
-            var paramsS3 = {
-                Bucket: config.s3.bucket,
-                //Key: config.s3.key + "/raw/" + s3key["channel"] + "/" + S3LogDate + "-events-" + Math.random().toString(36).substring(7),
-                Key: config.s3.key + "/" + process.env.Environment + "/" + S3LogDate + "-qsr-events-" + Math.random().toString(36).substring(7),
-                Body: JSON.stringify(JSON.parse(event["body"].toString().toLowerCase())),
-                ServerSideEncryption: "AES256"
-            };
-            s3.upload(paramsS3, (err, data) => {
-                if (err) {
-                    logging.error([
-                        process.env.GitHash
-                        + ":" +
-                        moduleName
-                        + ":" +
-                        this.putS3.name
-                        + ":" +
-                        err.lineNumber.toString()
-                    ], responsetemplate.error(err.message + ": " + err.stack))
-                    return reject("Error: " + responsetemplate.error(err.message + ": " + err.stack) + ": " + responsetemplate.error(err))
-                } else {
-                    logging.info([
-                        process.env.GitHash
-                        + ":" +
-                        moduleName
-                        + ":" +
-                        this.putS3.name
-                    ], data)
-                    return resolve(responsetemplate.success(event) + "-" + log)
-                }
-            })
+            console.log(moduleName + " -> " + event.body)
+            if (event.body !== null && event.body != undefined) {
+                let body = JSON.parse(event.body)
+                var S3LogDate = moment.utc(new Date()).format('YYYY-MM-DD/YYYY-MM-DD-HHmmss');
+                //Put record to s3
+                var paramsS3 = {
+                    Bucket: config.s3.bucket,
+                    Key: config.s3.key + "/" + process.env.Environment + "/" + S3LogDate + "-test-events-" + Math.random().toString(36).substring(7),
+                    Body: JSON.stringify(body).toLowerCase(),
+                    ServerSideEncryption: "AES256"
+                };
+                s3.upload(paramsS3, (err, data) => {
+                    if (err) {
+                        return reject(responsetemplate.error(err))
+                    } else {
+                        logging.info(
+                            moduleName
+                            + ":" +
+                            data.Key)
+                        return resolve(responsetemplate.success(event.body))
+                    }
+                })
+            }
         })
     }
     this.getSTS = function (roleARN) {

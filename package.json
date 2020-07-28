@@ -1,23 +1,26 @@
 {
   "name": "qsr-producer",
   "version": "1.0.0",
-  "description": "This will consume an API Gateway endpoint and will put data into a stream and s3 from the SRC Kitchen Service",
+  "description": "This will consume an API Gateway endpoint and will put data into a stream and s3 from the SRC Service",
   "main": "index.js",
   "dependencies": {
-    "aws-sdk": "^2.222.1",
-    "bluebird": "^3.5.3",
-    "dotenv": "^7.0.0",
+    "aws-sdk": "^2.713.0",
+    "bluebird": "^3.7.2",
+    "dotenv": "^8.2.0",
     "moment": "^2.22.0",
     "randomstring": "^1.1.5",
     "require": "^2.4.20",
     "simple-node-logger": "^18.12.22",
-    "uuid": "^3.1.0"
+    "uuid": "^8.1.0",
+    "jwt-decode": "^2.2.0",
+    "kafka-node": "^5.0.0"
   },
   "keywords": [
     "api gateway",
     "lambda",
     "kinesis",
     "s3",
+    "kafka",
     "terraform"
   ],
   "author": "Gerard Bartolome",
@@ -26,11 +29,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/polyglotDataNerd/SRC-producer.git"
+    "url": "git+https://github.com/polyglotDataNerd/poly-node-producer"
   },
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/polyglotDataNerd/SRC-producer/issues"
+    "url": "https://github.com/polyglotDataNerd/poly-node-producer/issues"
   },
-  "homepage": "https://github.com/polyglotDataNerd/SRC-producer#readme"
+  "homepage": "https://github.com/polyglotDataNerd/poly-node-producer#README.md"
 }
