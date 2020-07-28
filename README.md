@@ -19,12 +19,12 @@ According to the SRC documentation the endpoint that will need to be provided fo
    - [/app/utils/Authorizer](./app/utils/Authorizer.js)
         * The mechanism that checks the user id and password passed by an explicit authorization header within the endpoint. To read more about custom authorizers click on this [link](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-use-lambda-authorizer.html). **[terraform ref](https://github.com/polyglotDataNerd/SRC-producer/blob/master/infrastructure/modules/apigateway/main.tf#L224)**
         ![alt text](https://docs.aws.amazon.com/apigateway/latest/developerguide/images/custom-auth-workflow.png)
-        * This object is tied to a Lambda function and is invoked first when the API makes a POST request to check if the user id and pw is valid. **[terraform ref](./infrastructure/modules/infra/main.tf#L316)**
-        * If the credentials are invalid than it goes to a custom gateway 401 response error. **[terraform ref](./infrastructure/modules/infra/main.tf#L184)**
+        * This object is tied to a Lambda function and is invoked first when the API makes a POST request to check if the user id and pw is valid. **[terraform ref](./infrastructure/modules/apigateway/main.tf#L316)**
+        * If the credentials are invalid than it goes to a custom gateway 401 response error. **[terraform ref](./infrastructure/modules/apigateway/main.tf#L184)**
   
 **Producer**        
    - [/app/core/Producer](./app/core/Producer.js)
-        * The object is tied to a Lambda function that is invoked once Basic Auth has been sufficed.  **[terraform ref](./infrastructure/modules/infra/main.tf#L220)** 
+        * The object is tied to a Lambda function that is invoked once Basic Auth has been sufficed.  **[terraform ref](./infrastructure/modules/apigateway/main.tf#L220)** 
         * It is invoked by a POST from the Kitchen service
         * This function does several things chained together using a node.js [promise](http://bluebirdjs.com/docs/api-reference.html) wrapper within the [handler](./Handler.js#L38) entry point.
              
