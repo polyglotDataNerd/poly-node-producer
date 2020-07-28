@@ -1,7 +1,7 @@
 {
   "name": "qsr-producer",
   "version": "1.0.0",
-  "description": "This will consume an API Gateway endpoint and will put data into a stream and s3 from the QSR Kitchen Service",
+  "description": "This will consume an API Gateway endpoint and will put data into a stream and s3 from the SRC Kitchen Service",
   "main": "index.js",
   "dependencies": {
     "aws-sdk": "^2.222.1",
@@ -26,11 +26,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/polyglotDataNerd/sg-QSR-producer.git"
+    "url": "git+https://github.com/polyglotDataNerd/SRC-producer.git"
   },
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/polyglotDataNerd/sg-QSR-producer/issues"
+    "url": "https://github.com/polyglotDataNerd/SRC-producer/issues"
   },
-  "homepage": "https://github.com/polyglotDataNerd/sg-QSR-producer#readme"
+  "homepage": "https://github.com/polyglotDataNerd/SRC-producer#readme"
 }

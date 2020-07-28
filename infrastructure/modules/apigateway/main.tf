@@ -4,13 +4,13 @@ We can use the apply command to rebuild and the destroy command to delete all th
 ======*/
 
 /*====
-API Gateway Webhook for QSR
+API Gateway Webhook for SRC
 https://medium.com/onfido-tech/aws-api-gateway-with-terraform-7a2bebe8b68f
 ======*/
 
 resource "aws_api_gateway_rest_api" "qsr_api" {
   name = "api-producer-qsr-${var.environment}"
-  description = "webhook that will be for QSR Kitchen service"
+  description = "webhook that will be for SRC Kitchen service"
 }
 
 
@@ -125,13 +125,13 @@ resource "aws_lambda_permission" "apigw_lambda_producer_perms" {
 /*Producer Lambda: will be coming from the same package in s3 but just different handlers*/
 resource "aws_lambda_function" "producer" {
   s3_bucket = "polyglotDataNerd-bigdata-utility"
-  s3_key = "lambda/qsr/sg-QSR-producer-Auth.zip"
+  s3_key = "lambda/qsr/SRC-producer-Auth.zip"
   function_name = "api-producer-qsr-${var.environment}"
   role = "${var.lambda_role}"
   handler = "Handler.handler"
   runtime = "nodejs8.10"
   memory_size = 528
-  description = "QSR invocation trigger for API Gateway"
+  description = "SRC invocation trigger for API Gateway"
   vpc_config {
     security_group_ids = [
       "${split(",", var.sg_security_groups[var.environment])}"]
@@ -155,7 +155,7 @@ resource "aws_cloudwatch_log_group" "producer_log_group" {
   name = "/aws/lambda/${aws_lambda_function.producer.function_name}"
   retention_in_days = 14
 }
-/*Producer Lambda: will be coming from sg-QSR-producer-Auth.zip package in s3 but just different handlers*/
+/*Producer Lambda: will be coming from SRC-producer-Auth.zip package in s3 but just different handlers*/
 
 resource "aws_api_gateway_stage" "api_stage" {
   stage_name = "${var.environment}"
@@ -172,8 +172,8 @@ resource "aws_api_gateway_stage" "api_stage" {
 resource "aws_api_gateway_deployment" "qsr_api_deploy" {
   rest_api_id = "${aws_api_gateway_rest_api.qsr_api.id}"
   //stage_name = "${var.environment}"
-  stage_description = "QSR Kitchen Service endpoing for ${var.environment}"
-  description = "QSR Kitchen Service Endpoint"
+  stage_description = "SRC Kitchen Service endpoing for ${var.environment}"
+  description = "SRC Kitchen Service Endpoint"
   depends_on = [
     "aws_api_gateway_integration.integration",
     "aws_api_gateway_integration.options_integration"]
@@ -184,7 +184,7 @@ resource "aws_api_gateway_deployment" "qsr_api_deploy" {
 /*usage plans to control throttle*/
 resource "aws_api_gateway_usage_plan" "usage" {
   name = "usage_producer_qsr-${var.environment}"
-  description = "usage plans to control QSR Webhook throttle"
+  description = "usage plans to control SRC Webhook throttle"
 
   api_stages {
     api_id = "${aws_api_gateway_rest_api.qsr_api.id}"
@@ -222,16 +222,16 @@ resource "aws_api_gateway_authorizer" "basic_auth" {
 }
 
 
-/*Authorizer Lambda: will be coming from sg-QSR-producer-Auth.zip package in s3 but just different handlers*/
+/*Authorizer Lambda: will be coming from SRC-producer-Auth.zip package in s3 but just different handlers*/
 resource "aws_lambda_function" "authorizer" {
   s3_bucket = "polyglotDataNerd-bigdata-utility"
-  s3_key = "lambda/qsr/sg-QSR-producer-Auth.zip"
+  s3_key = "lambda/qsr/SRC-producer-Auth.zip"
   function_name = "api-authorizer-qsr-${var.environment}"
   role = "${var.lambda_role}"
   handler = "AuthHandler.handler"
   runtime = "nodejs8.10"
   memory_size = 320
-  description = "authorizer function for QSR"
+  description = "authorizer function for SRC"
   vpc_config {
     security_group_ids = [
       "${split(",", var.sg_security_groups[var.environment])}"]
@@ -264,7 +264,7 @@ resource "aws_cloudwatch_log_group" "authorizer_log_group" {
 
 /*roles and policies*/
 data "aws_iam_role" lambda_role {
-  name = "sg-lambda-invoke-platforms"
+  name = "lambda-invoke-platforms"
 }
 
 

@@ -7,19 +7,19 @@ We can use the apply command to rebuild and the destroy command to delete all th
 /*====
 Cloudwatch Log Group
 ======*/
-resource "aws_cloudwatch_log_group" "QSRproducer_log_group" {
-  name = "QSRproducer-etl-${var.environment}"
+resource "aws_cloudwatch_log_group" "SRCproducer_log_group" {
+  name = "SRCproducer-etl-${var.environment}"
   tags {
-    Environment = "QSRproducer-${var.environment}"
-    Application = "QSRproducer"
+    Environment = "SRCproducer-${var.environment}"
+    Application = "SRCproducer"
   }
 }
 
 /*====
-Kinesis stream for QSR
+Kinesis stream for SRC
 ======*/
-resource "aws_kinesis_stream" "QSR_stream" {
-  name = "QSR-data-stream-${var.environment}"
+resource "aws_kinesis_stream" "SRC_stream" {
+  name = "SRC-data-stream-${var.environment}"
   shard_count = "${var.shard_count}"
   retention_period = 24
 
@@ -32,16 +32,16 @@ resource "aws_kinesis_stream" "QSR_stream" {
   ]
 
   tags {
-    Name = "QSRproducer-etl-${var.environment}"
-    Application = "QSR-stream-producer"
+    Name = "SRCproducer-etl-${var.environment}"
+    Application = "SRC-stream-producer"
     Environment = "${var.environment}"
   }
 
 }
 
-resource "aws_iam_role" "QSR_stream_role" {
-  name = "sg-kinesis-QSR-role-${var.environment}"
-  description = "QSR role that let's QSR put events in sg Kinesis Stream"
+resource "aws_iam_role" "SRC_stream_role" {
+  name = "kinesis-SRC-role-${var.environment}"
+  description = "SRC role that let's SRC put events in sg Kinesis Stream"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -49,12 +49,12 @@ resource "aws_iam_role" "QSR_stream_role" {
     {
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::${var.QSR_account}:root"
+        "AWS": "arn:aws:iam::${var.SRC_account}:root"
       },
       "Action": "sts:AssumeRole",
       "Condition": {
         "StringEquals": {
-          "sts:ExternalId": "${var.sts_QSR_name}"
+          "sts:ExternalId": "${var.sts_SRC_name}"
         }
       }
     }
@@ -63,29 +63,29 @@ resource "aws_iam_role" "QSR_stream_role" {
 EOF
 }
 
-resource "aws_iam_policy" "QSR_kinesis_policy" {
-  name = "sg-kinesis-QSR-policy-${var.environment}"
-  description = "QSR Kinesis Policy"
+resource "aws_iam_policy" "SRC_kinesis_policy" {
+  name = "kinesis-SRC-policy-${var.environment}"
+  description = "SRC Kinesis Policy"
   policy = <<EOF
 {
     "Version": "2012-10-17",
     "Statement": [
         {
-            "Sid": "QSRKinPolicy",
+            "Sid": "SRCKinPolicy",
             "Effect": "Allow",
             "Action": [
                 "kinesis:PutRecord",
                 "kinesis:PutRecords",
                 "kinesis:DescribeStream"
             ],
-            "Resource": "arn:aws:kinesis:us-west-2:447388672287:stream/QSR-data-stream-${var.environment}"
+            "Resource": "arn:aws:kinesis:us-west-2:447388672287:stream/SRC-data-stream-${var.environment}"
         }
     ]
 }
 EOF
 }
 
-resource "aws_iam_role_policy_attachment" "QSR_attach_role" {
-  role = "${aws_iam_role.QSR_stream_role.name}"
-  policy_arn = "${aws_iam_policy.QSR_kinesis_policy.arn}"
+resource "aws_iam_role_policy_attachment" "SRC_attach_role" {
+  role = "${aws_iam_role.SRC_stream_role.name}"
+  policy_arn = "${aws_iam_policy.SRC_kinesis_policy.arn}"
 }

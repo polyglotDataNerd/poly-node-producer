@@ -50,10 +50,10 @@ variable "shard_count" {
   description = "kinesis shard count"
 }
 
-variable "QSR_account" {
+variable "SRC_account" {
 }
 
-variable "sts_QSR_name" {
+variable "sts_SRC_name" {
 }
 
 variable "lambda_role" {

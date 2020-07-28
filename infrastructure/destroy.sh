@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #sampe call
-# source ~/sg-QSR-producer/infrastructure/environment/consumer_ecs_infra_destroy.sh 'production'
+# source ~/SRC-producer/infrastructure/environment/consumer_ecs_infra_destroy.sh 'production'
 
 
 AWS_ACCESS_KEY_ID=$(aws ssm get-parameters --names /s3/polyglotDataNerd/admin/AccessKey --query Parameters[0].Value --with-decryption --output text)
@@ -10,17 +10,17 @@ CURRENTDATE="$(date  +%Y)"
 environment=$1
 
 #copy tfstate files into dir
-aws s3 cp s3://polyglotDataNerd-bigdata-utility/terraform/QSRproducer/$environment/infra/$CURRENTDATE ~/sg-QSR-producer/infrastructure/main  --recursive --sse --quiet --include "*"
+aws s3 cp s3://polyglotDataNerd-bigdata-utility/terraform/SRCproducer/$environment/infra/$CURRENTDATE ~/SRC-producer/infrastructure/main  --recursive --sse --quiet --include "*"
 
 export TF_VAR_awsaccess=$AWS_ACCESS_KEY_ID
 export TF_VAR_awssecret=$AWS_SECRET_ACCESS_KEY
 export TF_VAR_environment=$environment
-cd ~/sg-QSR-producer/infrastructure/main
+cd ~/SRC-producer/infrastructure/main
 terraform init
 terraform validate -check-variables=false
 terraform destroy -auto-approve
 
 #copy tfstate files to s3
-aws s3 cp ~/sg-QSR-producer/infrastructure/main/ s3://polyglotDataNerd-bigdata-utility/terraform/QSRproducer/$environment/infra/$CURRENTDATE/  --recursive --sse --quiet --exclude "*" --include "*terraform.tfstate*"
+aws s3 cp ~/SRC-producer/infrastructure/main/ s3://polyglotDataNerd-bigdata-utility/terraform/SRCproducer/$environment/infra/$CURRENTDATE/  --recursive --sse --quiet --exclude "*" --include "*terraform.tfstate*"
 
-cd ~/sg-QSR-producer/
+cd ~/SRC-producer/

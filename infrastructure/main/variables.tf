@@ -44,8 +44,8 @@ variable "private_subnets" {
   description = "sg data private subnets"
   type = "map"
   default = {
-    testing = "subnet-0b96df7879c8dc10f,subnet-0df9ad59d27ff98fd,subnet-029d5e294241c83ee"
-    production = "subnet-05495ba617a541515,subnet-0a87c15bfc4e4517c,subnet-0958f31b1b8ec88fa"
+    testing = ""
+    production = ""
   }
 }
 
@@ -54,8 +54,8 @@ variable "public_subnets" {
 
   type = "map"
   default = {
-    testing = "subnet-0cba3cec4da926e86,subnet-05343ed998f2bc1a7,subnet-0ea64f6e3be1aabea"
-    production = "subnet-01116e90917c89682,subnet-0e366fd4cac7ca471,subnet-0c7e6328e3e3b59ce"
+    testing = ""
+    production = ""
   }
 }
 
@@ -63,21 +63,21 @@ variable "sg_security_groups" {
   description = "sg security groups"
   type = "map"
   default = {
-    testing = "sg-0d415489a7e7de454,sg-0c08bd8a906d315c9"
-    production = "sg-04bd133673c9e6436,sg-0b16ce13b03cf9fc6"
+    testing = ""
+    production = ""
   }
 }
 
 variable "ecs_IAMROLE" {
   description = "The IAM role for the container"
   type = "string"
-  default = "arn:aws:iam::447388672287:role/bigdata-dev-role"
+  default = "arn:aws:iam:::role/bigdata-dev-role"
 }
 
 variable "repository_name" {
   description = "repository name for container images"
   type = "string"
-  default = "sg-QSRproducer"
+  default = ""
 }
 
 variable "shard_count" {
@@ -85,16 +85,16 @@ variable "shard_count" {
   description = "kinesis shard count"
 }
 
-variable "QSR_account" {
-  default = "447388672287"
+variable "SRC_account" {
+  default = ""
 }
 
-variable "sts_QSR_name" {
-  default = "QSR"
+variable "sts_SRC_name" {
+  default = ""
 }
 
 variable "lambda_role" {
-  default = "arn:aws:iam::447388672287:role/sg-lambda-invoke-platforms"
+  default = "arn:aws:iam:::role/lambda-invoke-platforms"
   description = "executes lambda role"
 }
 

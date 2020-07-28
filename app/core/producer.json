@@ -3,7 +3,7 @@
     "region": "us-west-2",
     "endpoint": "kinesis.us-west-2.amazonaws.com",
     "apiVersion": "2013-12-02",
-    "streamName": "QSR-data-stream-testing"
+    "streamName": "SRC-data-stream-testing"
   },
   "s3": {
     "region": "us-west-2",
@@ -14,8 +14,8 @@
   },
   "sts": {
     "apiVersion": "2011-06-15",
-    "sgbdRole": "arn:aws:iam::447388672287:role/sg-lambda-invoke-platforms",
-    "rolename": "sg-lambda-invoke-platforms"
+    "sgbdRole": "arn:aws:iam:::role/lambda-invoke-platforms",
+    "rolename": "lambda-invoke-platforms"
   }
 
 }
