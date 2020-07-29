@@ -13,7 +13,7 @@ Dependencies:
 
 Summary
 -
-According to the SRC documentation the endpoint that will need to be provided for the Kitchen service needs to have Basic Authentication of user id and password in order for the Post to be successful. 
+This generic webhook will use basic auth authentication that will live in an internal private service that communicates within the AWS private subnets. This can be also used to authenticate JWT header tokens.
 
 **Authorizer**        
    - [/app/utils/Authorizer](./app/utils/Authorizer.js)
