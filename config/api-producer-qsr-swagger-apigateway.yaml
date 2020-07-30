@@ -63,7 +63,7 @@ securityDefinitions:
     x-amazon-apigateway-authtype: "custom"
     x-amazon-apigateway-authorizer:
       authorizerUri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2::function:api-authorizer-qsr-testing/invocations"
-      authorizerCredentials: "arn:aws:iam::447388672287:role/lambda-invoke-platforms"
+      authorizerCredentials: "arn:aws:iam:::role/lambda-invoke-platforms"
       authorizerResultTtlInSeconds: 300
       identitySource: "method.request.header.authorization"
       type: "request"

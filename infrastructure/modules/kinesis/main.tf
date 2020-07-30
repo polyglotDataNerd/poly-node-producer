@@ -78,7 +78,7 @@ resource "aws_iam_policy" "SRC_kinesis_policy" {
                 "kinesis:PutRecords",
                 "kinesis:DescribeStream"
             ],
-            "Resource": "arn:aws:kinesis:us-west-2:447388672287:stream/SRC-data-stream-${var.environment}"
+            "Resource": "arn:aws:kinesis:us-west-2::stream/SRC-data-stream-${var.environment}"
         }
     ]
 }
